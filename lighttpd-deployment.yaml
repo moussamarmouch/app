@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: /snap/kompose/19/kompose-linux-amd64 convert
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: lighttpd
+  name: lighttpd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: lighttpd
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: /snap/kompose/19/kompose-linux-amd64 convert
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/front: "true"
+        io.kompose.service: lighttpd
+    spec:
+      containers:
+      - image: sebp/lighttpd
+        imagePullPolicy: ""
+        name: lighttpd
+        ports:
+        - containerPort: 80
+        resources: {}
+        tty: true
+        volumeMounts:
+        - mountPath: /var/www/localhost/htdocs
+          name: lighttpd-claim0
+        - mountPath: /etc/lighttpd
+          name: lighttpd-claim1
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes:
+      - name: lighttpd-claim0
+        persistentVolumeClaim:
+          claimName: lighttpd-claim0
+      - name: lighttpd-claim1
+        persistentVolumeClaim:
+          claimName: lighttpd-claim1
+status: {}

@@ -1,0 +1,59 @@
+version: '3.2'
+services:
+    nodejs:
+        container_name: nodejs
+        build:
+            context: ./
+            dockerfile: Dockerfile
+        depends_on:
+            - mariadb
+        ports:
+            - 3000:3000
+        volumes:
+            - .:/app
+        networks:
+        # you may set custom IP addresses
+          front:
+              ipv4_address: 192.168.0.2
+    
+    mariadb:
+        container_name: mariadb
+        image: mariadb:latest
+        restart: always
+        environment:
+          MARIADB_ROOT_PASSWORD: test
+          MARIADB_DATABASE: db
+          MARIADB_USER: moes
+          MARIADB_PASSWORD: test
+        volumes:
+            - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+        networks:
+        # you may set custom IP addresses
+          front:
+              ipv4_address: 192.168.0.3
+    
+    lighttpd:
+        container_name: lighttpd
+        image: sebp/lighttpd
+        depends_on:
+          - nodejs
+        volumes:
+          - .:/var/www/localhost/htdocs
+          - ./conf/.:/etc/lighttpd
+        ports:
+          - 80:80
+        expose:
+          - 80
+        tty: true
+        networks:
+        # you may set custom IP addresses
+          front:
+              ipv4_address: 192.168.0.4
+networks:
+  front:
+  # use the bridge driver, but enable IPv6
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+          - subnet: 192.168.0.0/24
